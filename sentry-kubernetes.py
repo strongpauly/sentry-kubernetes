@@ -20,6 +20,7 @@ LOG_LEVEL = os.environ.get("LOG_LEVEL", "error")
 DSN = os.environ.get("DSN")
 ENV = os.environ.get("ENVIRONMENT")
 RELEASE = os.environ.get("RELEASE")
+CLUSTER_NAME = os.environ.get("CLUSTER_NAME")
 
 
 def _listify_env(name, default=None):
@@ -45,6 +46,7 @@ DEPRECATED_EVENT_NAMESPACE = (
     [os.getenv("EVENT_NAMESPACE")] if os.getenv("EVENT_NAMESPACE") else None
 )
 EVENT_NAMESPACES = _listify_env("EVENT_NAMESPACES", DEPRECATED_EVENT_NAMESPACE)
+EVENT_NAMESPACES_EXCLUDED = _listify_env("EVENT_NAMESPACES_EXCLUDED")
 
 
 def main():
@@ -141,6 +143,9 @@ def watch_loop():
         if namespace and EVENT_NAMESPACES and namespace not in EVENT_NAMESPACES:
             continue
 
+        if namespace and EVENT_NAMESPACES_EXCLUDED and namespace in EVENT_NAMESPACES_EXCLUDED:
+            continue
+
         if event.involved_object and event.involved_object.kind:
             kind = event.involved_object.kind
 
@@ -172,6 +177,9 @@ def watch_loop():
 
             fingerprint = []
             tags = {}
+
+            if CLUSTER_NAME:
+                tags["cluster"] = CLUSTER_NAME
 
             if component:
                 tags["component"] = component
