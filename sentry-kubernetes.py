@@ -96,15 +96,15 @@ def watch_loop():
         transport=ThreadedRequestsHTTPTransport,
     )
 
-    # try:
-    #     resource_version = v1.list_event_for_all_namespaces().items[-1].metadata.resource_version
-    # except:
-    #     resource_version = 0
+    try:
+        resource_version = v1.list_event_for_all_namespaces().items[-1].metadata.resource_version
+    except:
+        resource_version = 0
 
     if EVENT_NAMESPACES and len(EVENT_NAMESPACES) == 1:
         stream = w.stream(v1.list_namespaced_event, EVENT_NAMESPACES[0])
     else:
-        stream = w.stream(v1.list_event_for_all_namespaces)
+        stream = w.stream(v1.list_event_for_all_namespaces, resource_version=resource_version)
 
     for event in stream:
         logging.debug("event: %s" % event)
